@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stasis Neural Recovery Kit - Diagnostic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050505; /* Deepest black */
+            color: #e5e5e5;
+        }
+
+        /* Smooth fade transition classes */
+        .fade-enter {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        .fade-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .fade-exit {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .fade-exit-active {
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        /* Custom Scrollbar for sleekness */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        /* Gradient Text */
+        .gradient-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-image: linear-gradient(to right, #fff, #999);
+        }
+
+        /* Scents Visuals (CSS Only) */
+        .aura {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            filter: blur(40px);
+            opacity: 0.6;
+            margin: 0 auto 20px auto;
+            transition: all 1s ease;
+        }
+        
+        .aura-aether { background: linear-gradient(135deg, #a5f3fc, #22d3ee); }
+        .aura-lumen { background: linear-gradient(135deg, #fde68a, #f59e0b); }
+        .aura-selene { background: linear-gradient(135deg, #e9d5ff, #a855f7); }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(20, 20, 20, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .option-btn {
+            transition: all 0.2s ease;
+        }
+        .option-btn:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.03);
+            transform: scale(1.01);
+        }
+        .option-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Loading spinner for calculation effect */
+        .loader {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-left-color: #fff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
+
+    <!-- Background decorative elements -->
+    <div class="fixed top-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-neutral-900 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
+    <div class="fixed bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] bg-neutral-800 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
+
+    <!-- Main Container -->
+    <main id="app-container" class="glass-card w-full max-w-md md:max-w-lg rounded-3xl p-8 relative z-10 min-h-[500px] flex flex-col">
+        
+        <!-- Header / Logo -->
+        <header class="text-center mb-8">
+            <h3 class="text-xs tracking-[0.3em] uppercase text-neutral-500 font-semibold mb-2">Stasis Neural Recovery</h3>
+            <div id="progress-container" class="hidden w-full h-1 bg-neutral-800 rounded-full mt-4 overflow-hidden">
+                <div id="progress-bar" class="h-full bg-white transition-all duration-500 ease-out" style="width: 0%"></div>
+            </div>
+        </header>
+
+        <!-- CONTENT AREA -->
+        <div id="content" class="flex-grow flex flex-col justify-center">
+            
+            <!-- Welcome Screen -->
+            <div id="welcome-screen" class="text-center fade-enter-active">
+                <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-neutral-800 to-neutral-700 mx-auto mb-6 flex items-center justify-center border border-neutral-700 shadow-inner">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                </div>
+                <h1 class="text-3xl font-light mb-4 gradient-text">Find Your Perfect Stasis Scent</h1>
+                <p class="text-neutral-400 mb-8 font-light leading-relaxed">
+                    Answer a few questions about your sleep and lifestyle, and we’ll recommend the ideal scent for your nightly neural recovery.
+                </p>
+                <button onclick="startQuiz()" class="w-full bg-white text-black font-medium py-4 rounded-xl hover:bg-neutral-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+                    Start Quiz
+                </button>
+            </div>
+
+            <!-- Quiz Screen -->
+            <div id="quiz-screen" class="hidden fade-enter">
+                <div class="mb-2">
+                    <span id="question-number" class="text-xs text-neutral-500 uppercase tracking-wider">Question 1 of 5</span>
+                </div>
+                <h2 id="question-text" class="text-xl md:text-2xl font-light mb-8 text-white leading-snug">
+                    Which best describes your sleep challenges?
+                </h2>
+                <div id="options-container" class="space-y-3">
+                    <!-- Options injected via JS -->
+                </div>
+            </div>
+
+            <!-- Calculation Screen (Brief intermission) -->
+            <div id="calc-screen" class="hidden text-center fade-enter">
+                <div class="loader mb-4"></div>
+                <p class="text-neutral-400 text-sm tracking-wider">ANALYZING NEURAL PROFILE...</p>
+            </div>
+
+            <!-- Result Screen -->
+            <div id="result-screen" class="hidden fade-enter text-center">
+                <div id="result-visual" class="aura aura-aether"></div>
+                
+                <h2 class="text-sm text-neutral-400 uppercase tracking-widest mb-1">Your Perfect Match</h2>
+                <h1 id="result-title" class="text-4xl font-light text-white mb-2">Aether</h1>
+                <p id="result-desc" class="text-neutral-300 font-light leading-relaxed mb-8 text-sm md:text-base">
+                    Light, airy, and calming—Aether is designed to help your mind settle and ease you into deep, restful sleep.
+                </p>
+
+                <div class="space-y-3">
+                    <button onclick="orderNow()" class="w-full bg-white text-black font-medium py-4 rounded-xl hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2">
+                        <span>Order Neural Recovery Kit</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </button>
+                    <button onclick="shareResult()" id="share-btn" class="w-full bg-transparent border border-neutral-800 text-neutral-400 font-medium py-3 rounded-xl hover:border-neutral-600 hover:text-white transition-colors text-sm">
+                        DM us to get yours tonight
+                    </button>
+                </div>
+                
+                <button onclick="restartQuiz()" class="mt-6 text-xs text-neutral-600 hover:text-neutral-400 underline decoration-neutral-800 underline-offset-4">
+                    Retake Diagnostic
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="fixed bottom-4 text-center w-full pointer-events-none">
+        <p class="text-[10px] text-neutral-800 uppercase tracking-widest">Stasis Systems © 2026</p>
+    </footer>
+
+    <script>
+        // --- Data ---
+        const questions = [
+            {
+                text: "Which best describes your sleep challenges?",
+                options: [
+                    { text: "Trouble falling asleep", value: "aether" },
+                    { text: "Wake up frequently during the night", value: "lumen" },
+                    { text: "Wake up feeling exhausted", value: "selene" }
+                ]
+            },
+            {
+                text: "Which statement matches your evening routine?",
+                options: [
+                    { text: "I work late or have a lot of mental activity", value: "aether" },
+                    { text: "I’m active in the evening but still want to relax", value: "lumen" },
+                    { text: "I try to relax, but my mind won’t switch off", value: "selene" }
+                ]
+            },
+            {
+                text: "What kind of atmosphere helps you unwind?",
+                options: [
+                    { text: "Light, airy, calming", value: "aether" },
+                    { text: "Cozy, comforting", value: "lumen" },
+                    { text: "Dreamy, tranquil, soothing", value: "selene" }
+                ]
+            },
+            {
+                text: "Do you prefer subtle or noticeable scents?",
+                options: [
+                    { text: "Subtle / minimal", value: "aether" },
+                    { text: "Moderate / comforting", value: "lumen" },
+                    { text: "Strong / immersive", value: "selene" }
+                ]
+            },
+            {
+                text: "What’s your main goal for sleep tonight?",
+                options: [
+                    { text: "Deep relaxation", value: "aether" },
+                    { text: "Recover energy / reduce fatigue", value: "lumen" },
+                    { text: "Reset my mind / neural reset", value: "selene" }
+                ]
+            }
+        ];
+
+        const resultsData = {
+            aether: {
+                title: "Aether",
+                desc: "Light, airy, and calming—Aether is designed to help your mind settle and ease you into deep, restful sleep.",
+                auraClass: "aura-aether"
+            },
+            lumen: {
+                title: "Lumen",
+                desc: "Soft, comforting, and restorative—Lumen helps reduce fatigue and prepares your body for a fully refreshed morning.",
+                auraClass: "aura-lumen"
+            },
+            selene: {
+                title: "Selene",
+                desc: "Dreamy, tranquil, and immersive—Selene promotes a full neural reset for deep rest and mental clarity.",
+                auraClass: "aura-selene"
+            }
+        };
+
+        // --- State ---
+        let currentStep = 0;
+        let scores = { aether: 0, lumen: 0, selene: 0 };
+        let tieBreaker = ""; // Stores the answer to the last question
+
+        // --- Elements ---
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const calcScreen = document.getElementById('calc-screen');
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
+        
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const questionNumber = document.getElementById('question-number');
+
+        // --- Functions ---
+
+        function startQuiz() {
+            switchScreen(welcomeScreen, quizScreen);
+            progressContainer.classList.remove('hidden');
+            scores = { aether: 0, lumen: 0, selene: 0 };
+            currentStep = 0;
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            // Update Progress
+            const progress = ((currentStep) / questions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+            
+            // Update Text
+            const q = questions[currentStep];
+            questionNumber.innerText = `Question ${currentStep + 1} of ${questions.length}`;
+            
+            // Fade out text briefly for transition effect
+            questionText.classList.remove('fade-enter-active');
+            questionText.classList.add('fade-enter');
+            
+            setTimeout(() => {
+                questionText.innerText = q.text;
+                questionText.classList.remove('fade-enter');
+                questionText.classList.add('fade-enter-active');
+            }, 50);
+
+            // Render Options
+            optionsContainer.innerHTML = '';
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = `option-btn w-full text-left bg-neutral-900 border border-neutral-800 text-neutral-300 p-4 rounded-xl mb-2 hover:text-white group`;
+                btn.style.animation = `fadeIn 0.5s ease forwards ${index * 0.1}s`; // Staggered fade in
+                
+                btn.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span>${opt.text}</span>
+                        <div class="w-4 h-4 rounded-full border border-neutral-600 group-hover:bg-white group-hover:border-white transition-colors"></div>
+                    </div>
+                `;
+                
+                btn.onclick = () => handleAnswer(opt.value);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(value) {
+            // Add Score
+            scores[value]++;
+
+            // Store tiebreaker if this is the last question (Sleep Goal)
+            if (currentStep === questions.length - 1) {
+                tieBreaker = value;
+            }
+
+            // Move Next
+            currentStep++;
+            progressBar.style.width = `${(currentStep / questions.length) * 100}%`;
+
+            if (currentStep < questions.length) {
+                // Smooth transition to next question
+                quizScreen.classList.remove('fade-enter-active');
+                quizScreen.classList.add('fade-exit-active');
+                
+                setTimeout(() => {
+                    renderQuestion();
+                    quizScreen.classList.remove('fade-exit-active');
+                    quizScreen.classList.add('fade-enter-active');
+                }, 300);
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function finishQuiz() {
+            switchScreen(quizScreen, calcScreen);
+            
+            // Determine Winner
+            let maxScore = 0;
+            let winner = tieBreaker || 'selene'; // Default fallback
+            let topScorers = [];
+
+            // Find max score
+            for (const [key, value] of Object.entries(scores)) {
+                if (value > maxScore) {
+                    maxScore = value;
+                }
+            }
+
+            // Find all scents with max score
+            for (const [key, value] of Object.entries(scores)) {
+                if (value === maxScore) {
+                    topScorers.push(key);
+                }
+            }
+
+            // Tie-breaking Logic
+            if (topScorers.length === 1) {
+                winner = topScorers[0];
+            } else {
+                // If there is a tie, check if the tieBreaker (last answer) is among the winners
+                if (topScorers.includes(tieBreaker)) {
+                    winner = tieBreaker;
+                } else {
+                    // Fallback if tiebreaker isn't in top scorers (rare but possible), prioritize Selene -> Lumen -> Aether
+                    if(topScorers.includes('selene')) winner = 'selene';
+                    else if (topScorers.includes('lumen')) winner = 'lumen';
+                    else winner = 'aether';
+                }
+            }
+
+            // Fake calculation delay for effect
+            setTimeout(() => {
+                displayResult(winner);
+                switchScreen(calcScreen, resultScreen);
+            }, 1500);
+        }
+
+        function displayResult(winnerKey) {
+            const data = resultsData[winnerKey];
+            const visual = document.getElementById('result-visual');
+            
+            // Reset Aura classes
+            visual.className = 'aura mb-6';
+            visual.classList.add(data.auraClass);
+
+            document.getElementById('result-title').innerText = data.title;
+            document.getElementById('result-desc').innerText = data.desc;
+        }
+
+        function switchScreen(from, to) {
+            from.classList.remove('fade-enter-active'); // ensure clean state
+            from.classList.add('hidden');
+            to.classList.remove('hidden');
+            
+            // Trigger reflow
+            void to.offsetWidth;
+            
+            to.classList.add('fade-enter-active');
+        }
+
+        function restartQuiz() {
+            switchScreen(resultScreen, welcomeScreen);
+            progressContainer.classList.add('hidden');
+            progressBar.style.width = '0%';
+        }
+
+        function orderNow() {
+            // Mock checkout
+            const btn = document.querySelector('#result-screen button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<span>Redirecting...</span>`;
+            setTimeout(() => {
+                alert("Redirecting to checkout page for " + document.getElementById('result-title').innerText);
+                btn.innerHTML = originalText;
+            }, 1000);
+        }
+
+        function shareResult() {
+            const btn = document.getElementById('share-btn');
+            const originalText = btn.innerText;
+            
+            navigator.clipboard.writeText(`I got ${document.getElementById('result-title').innerText} on the Stasis Neural Diagnostic!`).then(() => {
+                btn.innerText = "Result copied to clipboard!";
+                btn.classList.add('text-white', 'border-white');
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.classList.remove('text-white', 'border-white');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
